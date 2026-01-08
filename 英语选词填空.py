@@ -6,8 +6,10 @@ import time
 # ================= 配置与样式 =================
 st.set_page_config(page_title="英语选词填空 Pro", page_icon="📝", layout="centered")
 
+# --- 核心修改：添加水印和作者样式的 CSS ---
 st.markdown("""
 <style>
+    /* 填空下划线样式 */
     .blank {
         border-bottom: 2px solid #2563eb;
         color: #2563eb;
@@ -17,6 +19,7 @@ st.markdown("""
         min-width: 60px;
         text-align: center;
     }
+    /* 题目卡片样式 */
     .question-card {
         background-color: #f8f9fa;
         padding: 20px;
@@ -25,6 +28,7 @@ st.markdown("""
         font-size: 18px;
         margin-bottom: 20px;
     }
+    /* 按钮样式微调 */
     .stButton button {
         width: 100%;
         text-align: left;
@@ -33,13 +37,56 @@ st.markdown("""
         padding-top: 10px;
         padding-bottom: 10px;
     }
+    /* 统计数字大小 */
     [data-testid="stMetricValue"] {
         font-size: 24px;
+    }
+
+    /* === 新增：水印声明样式 === */
+    .watermark-box {
+        text-align: center;
+        background-color: #e0f7fa;
+        padding: 10px;
+        border-radius: 6px;
+        margin-bottom: 5px;
+        border: 2px solid #00bcd4;
+        color: #00796b;
+        font-weight: bold;
+        font-size: 16px;
+    }
+    .author-box {
+        text-align: center;
+        background-color: #fff3e0;
+        padding: 8px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        border: 1px solid #ff9800;
+        color: #e65100;
+        font-weight: bold;
+        font-size: 14px;
+    }
+    /* 夜间模式适配 (暗色背景下的文字颜色调整) */
+    @media (prefers-color-scheme: dark) {
+        .watermark-box {
+            background-color: #064e3b;
+            color: #6ee7b7;
+            border-color: #059669;
+        }
+        .author-box {
+            background-color: #7c2d12;
+            color: #fdba74;
+            border-color: #ea580c;
+        }
     }
 </style>
 """, unsafe_allow_html=True)
 
-# ================= 1. 核心数据 (保持不变) =================
+# --- 核心修改：显示水印和作者 ---
+st.markdown('<div class="watermark-box">该网页仅供交流，非盈利，若你付费获取，请联系QQ：1490473838</div>', unsafe_allow_html=True)
+st.markdown('<div class="author-box">作者：霡霂</div>', unsafe_allow_html=True)
+
+
+# ================= 1. 核心数据 =================
 RAW_QUESTION_BANK = [
     {"question": "In schools, teachers and pupils alike often _____ that if a concept has been easy to learn, then the lesson has been successful.", "answer": "assume", "translation": "在学校里，教师和学生往往认为，如果某个概念容易掌握，那么这节课就算成功了。"},
     {"question": "Lu Xun produced many long-lasting short stories, the themes of which cover an extensive _____ and reflect a multitude of aspects of social life.", "answer": "range", "translation": "鲁迅创作了大量流传久远的短篇小说，题材广泛，反映了社会生活的方方面面。"},
@@ -217,7 +264,7 @@ def show_answer_logic():
 with st.sidebar:
     st.header("⚙️ 设置")
     
-    # 【新增】自动切题开关
+    # 自动切题开关
     auto_next = st.toggle("⚡ 答对自动切题", value=True, help="回答正确后，自动等待1.5秒并进入下一题")
 
     st.subheader("选择模式")
@@ -318,9 +365,8 @@ else:
             
             st.button("下一题 ➜", type="primary", on_click=next_question)
 
-            # 【新增】自动切题逻辑
+            # 自动切题逻辑
             if is_correct and auto_next:
-                # 给用户一点时间看“回答正确”的提示
                 time.sleep(1.5) 
                 next_question()
                 st.rerun()

@@ -258,12 +258,11 @@ class FertilizerCalculator:
     }
     
     @staticmethod
-    def calculate_deficiency(nutrient_name, current_value, area_mu=1.0):
+    def calculate_deficiency(nutrient_name, current_value):
         """
-        计算养分缺乏量
+        计算养分缺乏量（每亩）
         nutrient_name: 养分名称
         current_value: 当前测定值
-        area_mu: 面积（亩）
         """
         if nutrient_name not in FertilizerCalculator.NUTRIENT_STANDARDS:
             return {"error": "未知养分"}
@@ -273,12 +272,13 @@ class FertilizerCalculator:
         
         # 判断是否需要补充
         if current_value >= target_min:
-            deficiency = 0
+            deficiency_ppm = 0
+            deficiency_kg_per_mu = 0
             status = "充足"
         else:
-            # 计算达到目标下限的缺乏量（kg/亩）
+            # 计算达到目标下限的缺乏量（每kg/亩）
             deficiency_ppm = target_min - current_value
-            deficiency = deficiency_ppm * FertilizerCalculator.SOIL_CONVERSION * area_mu
+            deficiency_kg_per_mu = deficiency_ppm * FertilizerCalculator.SOIL_CONVERSION
             status = "缺乏"
         
         # 确定缺乏程度
@@ -291,7 +291,8 @@ class FertilizerCalculator:
             "current_value": current_value,
             "target_min": target_min,
             "target_max": target_max,
-            "deficiency_kg_per_mu": round(deficiency, 3),
+            "deficiency_ppm": round(deficiency_ppm, 3),
+            "deficiency_kg_per_mu": round(deficiency_kg_per_mu, 3),
             "status": status,
             "grade": grade
         }
@@ -307,8 +308,9 @@ class FertilizerCalculator:
         if deficiency_info["deficiency_kg_per_mu"] <= 0:
             return {
                 "fertilizer": fertilizer_type,
-                "amount": 0,
-                "unit": "kg/亩",
+                "amount_per_mu": 0,
+                "total_amount": 0,
+                "unit": "kg",
                 "status": "无需补充"
             }
         
@@ -350,39 +352,36 @@ class FertilizerCalculator:
                 else:
                     return {"error": f"肥料{fertilizer_type}不含所需养分{nutrient_symbol}"}
             
-            # 计算理论用量
-            deficiency_kg = deficiency_info["deficiency_kg_per_mu"] * area_mu
-            theoretical_amount = deficiency_kg / content
+            # 计算理论用量（每亩）
+            deficiency_kg_per_mu = deficiency_info["deficiency_kg_per_mu"]
+            theoretical_amount_per_mu = deficiency_kg_per_mu / content
             
             # 考虑肥料利用率
-            actual_amount = theoretical_amount / utilization
+            actual_amount_per_mu = theoretical_amount_per_mu / utilization
             
             # 根据缺乏程度调整
             if deficiency_info["grade"] in ["极缺", "极低"]:
-                actual_amount *= 1.2  # 增加20%
+                actual_amount_per_mu *= 1.2  # 增加20%
             elif deficiency_info["grade"] in ["缺", "低"]:
-                actual_amount *= 1.0
+                actual_amount_per_mu *= 1.0
             else:
-                actual_amount *= 0.8  # 减少20%
+                actual_amount_per_mu *= 0.8  # 减少20%
             
-            # 确保返回统一的字典结构
+            # 计算总面积用量
+            total_amount = actual_amount_per_mu * area_mu
+            
             result = {
                 "fertilizer": fertilizer_type,
                 "content": f"{fertilizer_type}含{nutrient_symbol} {fertilizer.get(nutrient_symbol, fertilizer.get('有机质', 0))}%",
-                "deficiency": round(deficiency_kg, 3),
-                "theoretical": round(theoretical_amount, 2),
-                "actual": round(actual_amount, 2),
+                "deficiency_per_mu": round(deficiency_kg_per_mu, 3),
+                "theoretical_per_mu": round(theoretical_amount_per_mu, 2),
+                "actual_per_mu": round(actual_amount_per_mu, 2),
+                "total_amount": round(total_amount, 2),
                 "unit": "kg",
                 "area": area_mu,
                 "utilization_rate": f"{utilization*100}%"
             }
             
-            # 计算每亩用量
-            if area_mu > 0:
-                result["per_mu"] = round(actual_amount / area_mu, 2)
-            else:
-                result["per_mu"] = 0
-                
             return result
         else:
             return {"error": "未知肥料类型"}
@@ -407,8 +406,8 @@ def generate_comprehensive_recommendations(results, region="北疆", area_mu=1.0
         grade = item["评估等级"]
         nutrient_name = item_name.split()[0]
         
-        # 通用缺乏量计算
-        deficiency_info = calculator.calculate_deficiency(item_name, current_value, area_mu)
+        # 通用缺乏量计算（不传入面积参数）
+        deficiency_info = calculator.calculate_deficiency(item_name, current_value)
         
         # 基础信息
         rec = {
@@ -416,7 +415,8 @@ def generate_comprehensive_recommendations(results, region="北疆", area_mu=1.0
             "状态": f"{status} ({grade})",
             "当前值": current_value,
             "目标范围": f"{deficiency_info['target_min']}-{deficiency_info['target_max']}",
-            "缺乏量(kg/亩)": deficiency_info["deficiency_kg_per_mu"]
+            "缺乏量(kg/亩)": deficiency_info["deficiency_kg_per_mu"],
+            "缺乏量(ppm)": deficiency_info["deficiency_ppm"]
         }
         
         # 根据不同状态生成建议
@@ -458,13 +458,13 @@ def generate_comprehensive_recommendations(results, region="北疆", area_mu=1.0
                     fertilizer_options = []
                 
                 if fertilizer_options:
-                    # 计算各种肥料的用量
+                    # 计算各种肥料的用量（传入面积参数）
                     fert_calcs = []
                     for fert in fertilizer_options:
                         calc = calculator.calculate_fertilizer_amount(
-                            deficiency_info, fert, area_mu
+                            deficiency_info, fert, area_mu  # 传入面积
                         )
-                        if "error" not in calc and "status" not in calc:  # 过滤掉错误和无需求的
+                        if "error" not in calc and calc.get("total_amount", 0) > 0:
                             fert_calcs.append(calc)
                     
                     if fert_calcs:
@@ -524,25 +524,19 @@ def export_comprehensive_advice(region, fertilizer_recs, area_mu=1.0):
                 
                 for fert in calc["肥料用量"]:
                     if isinstance(fert, dict) and "fertilizer" in fert:
-                        # 安全地获取每亩用量
-                        per_mu = fert.get('per_mu', 0)
-                        if per_mu == 0:
-                            # 如果没有per_mu，计算一个
-                            if 'actual' in fert and fert.get('area', 0) > 0:
-                                per_mu = fert['actual'] / fert['area']
-                        
-                        advice_text += f"     • {fert['fertilizer']}: {per_mu:.2f} kg/亩"
+                        # 显示每亩用量和总用量
+                        advice_text += f"     • {fert['fertilizer']}: {fert.get('actual_per_mu', 0):.2f} kg/亩"
+                        if area_mu > 1:
+                            advice_text += f" (总面积{area_mu}亩，共需{fert.get('total_amount', 0):.2f} kg)"
                         if "content" in fert:
                             advice_text += f" ({fert['content']})"
                         advice_text += "\n"
                 
-                # 安全地获取肥料利用率
-                util_rate = "30-50%"
+                # 获取肥料利用率
                 if calc["肥料用量"] and len(calc["肥料用量"]) > 0:
                     first_fert = calc["肥料用量"][0]
                     util_rate = first_fert.get('utilization_rate', '30-50%')
-                
-                advice_text += f"     注：考虑肥料利用率{util_rate}的推荐用量\n\n"
+                    advice_text += f"     注：考虑肥料利用率{util_rate}的推荐用量\n\n"
     
     # 丰富养分提醒
     abundant_items = [r for r in fertilizer_recs if "丰富" in r["状态"]]
@@ -836,9 +830,13 @@ if st.session_state.assessment_results is not None:
                             
                             for fert in calc["肥料用量"]:
                                 if isinstance(fert, dict) and "fertilizer" in fert:
-                                    per_mu = fert.get('per_mu', 0)
+                                    per_mu = fert.get('actual_per_mu', 0)
+                                    total = fert.get('total_amount', 0)
                                     if per_mu > 0:
-                                        st.markdown(f"  • {fert['fertilizer']}: `{per_mu} kg/亩`")
+                                        if st.session_state.area_mu > 1:
+                                            st.markdown(f"  • {fert['fertilizer']}: `{per_mu} kg/亩` (总面积需 {total} kg)")
+                                        else:
+                                            st.markdown(f"  • {fert['fertilizer']}: `{per_mu} kg/亩`")
         
         # 丰富/正常养分
         with col_fer_2:
@@ -892,10 +890,13 @@ if st.session_state.assessment_results is not None:
                     
                     for fert in calc["肥料用量"]:
                         if isinstance(fert, dict) and "fertilizer" in fert:
-                            per_mu = fert.get('per_mu', 0)
+                            per_mu = fert.get('actual_per_mu', 0)
+                            total = fert.get('total_amount', 0)
                             if per_mu > 0:
                                 st.markdown(f"**{fert['fertilizer']}**:")
                                 st.markdown(f"- 用量: **{per_mu} kg/亩**")
+                                if st.session_state.area_mu > 1:
+                                    st.markdown(f"- 总面积用量: **{total} kg** (共{st.session_state.area_mu}亩)")
                                 if "content" in fert:
                                     st.markdown(f"- 养分含量: {fert['content']}")
                                 st.markdown(f"- 肥料利用率: {fert.get('utilization_rate', '30-50%')}")
@@ -908,14 +909,15 @@ if st.session_state.assessment_results is not None:
         
         **1. 养分缺乏量计算：**
         ```
-        缺乏量(kg/亩) = (目标值 - 当前值) × 转换系数 × 面积(亩)
+        缺乏量(kg/亩) = (目标值 - 当前值) × 转换系数
         转换系数 = 0.15 (基于1亩耕层土壤约150,000kg)
         ```
         
         **2. 肥料用量计算：**
         ```
-        理论用量 = 缺乏量 ÷ 肥料养分含量
-        实际用量 = 理论用量 ÷ 肥料利用率
+        每亩理论用量 = 缺乏量 ÷ 肥料养分含量
+        每亩实际用量 = 每亩理论用量 ÷ 肥料利用率
+        总用量 = 每亩实际用量 × 面积(亩)
         ```
         
         **3. 肥料利用率参考：**

@@ -304,7 +304,7 @@ if not st.session_state.quiz_active:
     1. **随机模式**：从题库中随机抽取题目。
     2. **顺序模式**：按顺序练习未掌握的题目。
     3. **错题模式**：专门攻克历史错题。
-    4. **我的朋友，不要拿去盈利哦，不然我会很伤心的。
+    4. **我的朋友，不要拿去盈利哦，不然我会很伤心的。**
     """)
 else:
     if st.session_state.current_q_index < len(st.session_state.queue):
@@ -357,4 +357,5 @@ else:
         if st.button("返回主页"):
             st.session_state.quiz_active = False
             st.rerun()
+
 

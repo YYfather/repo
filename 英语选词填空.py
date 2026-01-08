@@ -4,7 +4,7 @@ import json
 import time
 
 # ================= 配置与样式 =================
-st.set_page_config(page_title="英语选词填空 Pro", page_icon="📝", layout="centered")
+st.set_page_config(page_title="英语选词填空", page_icon="📝", layout="centered")
 
 st.markdown("""
 <style>
@@ -295,7 +295,7 @@ with st.sidebar:
 
 # ================= 5. 主界面 =================
 
-st.title("英语选词填空刷题软件 Pro")
+st.title("选词填空刷题")
 
 if not st.session_state.quiz_active:
     st.info("👈 请在左侧侧边栏选择一种模式开始刷题")
@@ -304,6 +304,7 @@ if not st.session_state.quiz_active:
     1. **随机模式**：从题库中随机抽取题目。
     2. **顺序模式**：按顺序练习未掌握的题目。
     3. **错题模式**：专门攻克历史错题。
+    4. **我的朋友，不要拿去盈利哦，不然我会很伤心的。
     """)
 else:
     if st.session_state.current_q_index < len(st.session_state.queue):
@@ -356,3 +357,4 @@ else:
         if st.button("返回主页"):
             st.session_state.quiz_active = False
             st.rerun()
+

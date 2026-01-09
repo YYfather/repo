@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英语选词填空刷题练习 Pro</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --option-hover: #f0f9ff;
+        }
+
+        /* 夜间模式变量 */
+        [data-theme="dark"] {
+            --primary-color: #3b82f6;
+            --primary-hover: #60a5fa;
+            --success-color: #34d399;
+            --error-color: #f87171;
+            --warning-color: #fbbf24;
+            --bg-color: #111827;
+            --card-bg: #1f2937;
+            --text-main: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --border-color: #374151;
+            --option-hover: #374151;
+        }
+
+        * { box-sizing: border-box; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
+        
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        /* --- 还原原始作者与水印样式 (含夜间模式适配) --- */
+        .original-watermark {
+            text-align: center;
+            background-color: #e0f7fa;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border: 2px solid #00bcd4;
+            font-weight: bold;
+            color: #00796b;
+            font-size: 16px;
+        }
+        .original-author {
+            text-align: center;
+            background-color: #fff3e0;
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            border: 1px solid #ff9800;
+            font-weight: bold;
+            color: #e65100;
+            font-size: 15px;
+        }
+
+        /* 水印部分的夜间模式适配 */
+        [data-theme="dark"] .original-watermark {
+            background-color: #064e3b; /* 深青色背景 */
+            color: #6ee7b7;            /* 浅青色文字 */
+            border-color: #059669;
+        }
+        [data-theme="dark"] .original-author {
+            background-color: #7c2d12; /* 深橙色背景 */
+            color: #fdba74;            /* 浅橙色文字 */
+            border-color: #ea580c;
+        }
+
+        /* 顶部工具栏 */
+        .header-tools {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .theme-toggle, .settings-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            color: var(--text-secondary);
+            padding: 5px;
+            border-radius: 50%;
+        }
+        .theme-toggle:hover { background-color: var(--border-color); }
+
+        h1 { text-align: center; color: var(--primary-color); margin: 10px 0 20px; font-size: 2rem; }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+            min-height: 400px;
+        }
+
+        /* 按钮样式 */
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transform: translateY(0);
+            transition: all 0.2s;
+        }
+
+        .btn:active { transform: translateY(1px); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-primary { background-color: var(--primary-color); }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+
+        .btn-secondary { background-color: var(--text-secondary); }
+        .btn-secondary:hover { background-color: #4b5563; }
+
+        .btn-danger { background-color: var(--error-color); }
+        .btn-danger:hover { background-color: #dc2626; }
+
+        .btn-warning { background-color: var(--warning-color); color: #fff; }
+        .btn-warning:hover { background-color: #d97706; }
+
+        /* 统计看板 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background-color: var(--bg-color);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-value { font-size: 24px; font-weight: bold; color: var(--primary-color); }
+        .stat-label { font-size: 13px; color: var(--text-secondary); margin-top: 5px; }
+
+        /* 题目区域 */
+        .question-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .mode-badge {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+
+        /* 自动切题开关样式 */
+        .auto-advance-wrapper {
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .auto-advance-wrapper input {
+            margin-right: 6px;
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+
+        .highlight-blank {
+            display: inline-block;
+            min-width: 60px;
+            border-bottom: 2px solid var(--primary-color);
+            text-align: center;
+            color: var(--primary-color);
+            font-weight: bold;
+            padding: 0 5px;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .option-card {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: var(--bg-color);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .option-card:hover {
+            background-color: var(--option-hover);
+            border-color: var(--primary-color);
+        }
+
+        .option-key {
+            width: 30px;
+            height: 30px;
+            background-color: var(--border-color);
+            color: var(--text-secondary);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* 状态样式 */
+        .option-card.correct {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-color: var(--success-color);
+            color: var(--success-color);
+        }
+        .option-card.correct .option-key { background-color: var(--success-color); color: white; }
+
+        .option-card.incorrect {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-color: var(--error-color);
+            color: var(--error-color);
+        }
+        .option-card.incorrect .option-key { background-color: var(--error-color); color: white; }
+
+        /* 解析区域 */
+        .analysis-box {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: var(--bg-color);
+            border-radius: 10px;
+            border-left: 5px solid var(--primary-color);
+            display: none;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .analysis-box h4 { margin: 0 0 10px; color: var(--text-main); }
+        .translation { color: var(--text-secondary); font-style: italic; }
+
+        /* 进度条 */
+        .progress-wrapper {
+            margin-top: 30px;
+            background-color: var(--border-color);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: var(--success-color);
+            transition: width 0.4s ease;
+        }
+
+        /* 快捷键提示 */
+        .keyboard-hint {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 20px;
+            opacity: 0.7;
+        }
+        .key-badge {
+            background: var(--border-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin: 0 2px;
+            font-family: monospace;
+        }
+
+        /* 模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .modal textarea {
+            width: 100%;
+            height: 150px;
+            margin: 10px 0;
+            padding: 10px;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 6px;
+        }
+
+        @media (max-width: 600px) {
+            .btn { width: 100%; margin-bottom: 5px; }
+            .question-text { font-size: 1.1rem; }
+            .keyboard-hint { display: none; }
+            .header-tools { margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="original-watermark">该网页仅供交流，非盈利，若你付费获取，请联系QQ：1490473838</div>
+    <div class="original-author">作者：霡霂</div>
+
+    <div class="header-tools">
+        <div></div> <div>
+            <button class="theme-toggle" onclick="toggleTheme()" title="切换夜间模式">🌓</button>
+            <button class="settings-btn" onclick="openDataModal()" title="数据管理">💾</button>
+        </div>
+    </div>
+
+    <h1>英语选词填空刷题软件 Pro</h1>
+
+    <div class="container">
+        <div id="stats-view">
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="startPractice('random')">🎲 随机刷题</button>
+                <button class="btn btn-secondary" onclick="startPractice('sequential')">📝 顺序刷题</button>
+                <button class="btn btn-danger" onclick="startPractice('review')" id="btn-review-mistakes">💊 错题重练</button>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-total">0</div>
+                    <div class="stat-label">总题库</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-done">0</div>
+                    <div class="stat-label">已刷题数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-accuracy" style="color: var(--success-color)">0%</div>
+                    <div class="stat-label">正确率</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-wrong" style="color: var(--error-color)">0</div>
+                    <div class="stat-label">错题本</div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn btn-warning" onclick="resetAllProgress()" style="font-size: 14px; padding: 5px 15px;">🗑️ 重置所有进度</button>
+            </div>
+        </div>
+
+        <div id="quiz-view" style="display: none;">
+            <div class="question-meta">
+                <span>
+                    <span id="mode-badge" class="mode-badge">随机模式</span>
+                    第 <span id="current-index-display">1</span> 题
+                </span>
+                
+                <label class="auto-advance-wrapper" title="答对后自动进入下一题">
+                    <input type="checkbox" id="auto-advance-toggle" onchange="toggleAutoAdvance()">
+                    <span>⚡ 自动切题</span>
+                </label>
+
+                <span>剩余: <span id="remaining-count">0</span></span>
+            </div>
+
+            <div id="question-text" class="question-text"></div>
+            
+            <div id="options-container" class="options-grid"></div>
+
+            <div id="analysis-box" class="analysis-box">
+                <h4 id="feedback-title">解析</h4>
+                <p id="translation-text" class="translation"></p>
+                <div style="margin-top: 15px; text-align: right;">
+                    <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()">下一题 (Enter) ➜</button>
+                </div>
+            </div>
+
+            <div class="progress-wrapper">
+                <div id="session-progress" class="progress-bar" style="width: 0%"></div>
+            </div>
+
+            <div style="margin-top: 20px; display: flex; justify-content: space-between;">
+                <button class="btn btn-secondary" onclick="exitPractice()" style="padding: 5px 15px; font-size: 12px;">✕ 结束练习</button>
+                <button class="btn btn-warning" onclick="showAnswer()" id="show-answer-btn" style="padding: 5px 15px; font-size: 12px;">👁️ 查看答案</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="keyboard-hint">
+        快捷键: <span class="key-badge">1</span>-<span class="key-badge">4</span> 选择答案 &nbsp;|&nbsp; <span class="key-badge">Enter</span> 下一题
+    </div>
+
+    <div id="data-modal" class="modal">
+        <div class="modal-content">
+            <h3>数据备份与恢复</h3>
+            <p style="font-size: 12px; color: var(--text-secondary);">复制下方代码保存备份，或粘贴代码恢复进度。</p>
+            <textarea id="data-area"></textarea>
+            <div style="text-align: right; gap: 10px; display: flex; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeDataModal()">关闭</button>
+                <button class="btn btn-primary" onclick="importData()">恢复数据</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 核心题库数据 ---
+        const rawQuestionBank = [
+            {"question": "In schools, teachers and pupils alike often _____ that if a concept has been easy to learn, then the lesson has been successful.", "answer": "assume", "translation": "在学校里，教师和学生往往认为，如果某个概念容易掌握，那么这节课就算成功了。"},
+            {"question": "Lu Xun produced many long-lasting short stories, the themes of which cover an extensive _____ and reflect a multitude of aspects of social life.", "answer": "range", "translation": "鲁迅创作了大量流传久远的短篇小说，题材广泛，反映了社会生活的方方面面。"},
+            {"question": "These arguments were _____ a hundred years ago and they still hold true today.", "answer": "valid", "translation": "这些论点在一百年前成立，至今依然适用。"},
+            {"question": "The president said curbing the addiction of alcohol would save money and _____ lives.", "answer": "prolong", "translation": "总统表示，遏制酒精成瘾将节省资金并延长寿命。"},
+            {"question": "The total amount raised so far is _____ $1,000.", "answer": "approaching", "translation": "到目前为止，总共筹集的资金已接近 1000 美元。"},
+            {"question": "There is still no general _____ on whether global warming is real or not.", "answer": "consensus", "translation": "关于全球变暖是否真实存在，目前仍未达成普遍共识。"},
+            {"question": "For decades, the U.S. led the world in the proportion of citizens with college degrees, but in recent years it has been _____ by other countries.", "answer": "surpassed", "translation": "数十年来，美国在公民大学学历比例方面长期位居全球首位，但近年来已被其他国家超越。"},
+            {"question": "It is the company's _____ decision to sell part of its business to focus on its core products.", "answer": "strategic", "translation": "这是公司的一项战略决策，即出售部分业务以专注于其核心产品。"},
+            {"question": "Although she once _____ freedom and independence, she now gives up her career and becomes a devoted housewife.", "answer": "preached", "translation": "她虽曾高呼自由独立，如今却放弃事业，甘当贤妻良母。"},
+            {"question": "We have some statistics, but we really need something more _____ before we can make any firm decisions.", "answer": "definite", "translation": "我们掌握了一些统计数据，但在做出任何明确决策前，确实需要更确切的依据。"},
+            {"question": "All doctoral students are expected to hand in their thesis abstracts before Friday, so don't _____ details for the time being.", "answer": "sweat over", "translation": "所有博士生都应在周五前提交论文摘要，所以目前先别在细节上纠结。"},
+            {"question": "In the past decade, the global mean sea levels have doubled _____ the 20th century trend of 1.6 mm per year.", "answer": "compared to", "translation": "在过去十年里，全球平均海平面的上升速度是 20 世纪每年 1.6 毫米这一趋势的两倍。"},
+            {"question": "If you have _____ all the exercises in this book, you are ready for the advanced course.", "answer": "followed through", "translation": "若您已完成本书所有练习，即可进入进阶课程。"},
+            {"question": "The company's stock has declined by more than 50 percent since the start of this year, _____ last year when it gained 30 percent.", "answer": "in contrast with", "translation": "该公司股价自今年年初以来已下跌超过 50%，与去年上涨 30% 形成鲜明对比。"},
+            {"question": "Studies show that _____ people who consciously control their diet are healthier than those overeating.", "answer": "on average", "translation": "研究表明，与暴饮暴食者相比，自觉控制饮食的人群平均健康状况更佳。"},
+            {"question": "A large quantity of real cases suggest that the average speed of the vehicles _____ closely with the severity of the accident caused.", "answer": "correlates", "translation": "大量真实案例表明，车辆的平均速度与所造成的事故严重程度紧密相关。"},
+            {"question": "Agricultural technologies have _____ farm production, resulting in a dramatic increase in grain output.", "answer": "revolutionized", "translation": "农业技术彻底改变了农业生产，导致了粮食产量的大幅度增长。"},
+            {"question": "Officials claim that the chemical leak accident _____ no real danger for surrounding residents.", "answer": "poses", "translation": "官员们声称，此次化学品泄漏事故对周边居民不构成真正的危险。"},
+            {"question": "We still have no _____ proof that climate change is caused solely by human activity.", "answer": "conclusive", "translation": "我们仍然没有确凿的证据证明气候变化完全是由人类活动造成的。"},
+            {"question": "You will have to _____ your comments to our Head Office.", "answer": "address", "translation": "您需要将您的意见提交给我们总部。"},
+            {"question": "He was sentenced to ten years' imprisonment for _____ the stock market and making huge profits illegally.", "answer": "rigging", "translation": "他因操纵股市和非法获得巨额利益被判处 10 年监禁。"},
+            {"question": "The company, which started out by handling big data, has now _____ into a high-prestige enterprise that covers many domains of internet services.", "answer": "evolved", "translation": "这家以处理大数据起家的公司，现在已发展成为一家涵盖多个互联网服务领域的高声望企业。"},
+            {"question": "If the air pressure in aircraft cabin becomes lower, oxygen masks will _____ drop down.", "answer": "automatically", "translation": "如果飞机舱内气压降低，氧气面罩会自动脱落。"},
+            {"question": "Farming technology enables the crops to be _____ by liquid fertilizer, which is more effective and sustainable than the conventional method.", "answer": "nourished", "translation": "农业技术使得作物可以通过液体肥料得到滋养，这比传统方法更有效，更可持续。"},
+            {"question": "A study of hundreds of elderly people shows that some have similar lifestyles, but _____ in health conditions.", "answer": "variable", "translation": "一项对数百名老年人的研究表明，有些人生活方式相似，但健康状况不相同。"},
+            {"question": "The doctor cautions that this drug may have the effect of _____ the Patients' heart rate.", "answer": "speeding up", "translation": "医生提醒说，这种药物可能会有加快患者心跳的效果。"},
+            {"question": "He built up a successful business within short years but it was all done _____ his health.", "answer": "at the expense of", "translation": "他在短短几年内建立起了一家成功的企业，但这一切都是以他健康为代价。"},
+            {"question": "It is an army man's duty to _____ orders strictly during a military operation.", "answer": "act on", "translation": "在军事行动中，严格遵守命令是军人的职责。"},
+            {"question": "_____ public belief, the results of all scientific studies aren't conclusive.", "answer": "Contrary to", "translation": "与公众的普遍看法相反，并非所有的科学研究的结果都是结论性的。"},
+            {"question": "If someone tries to persuade you to invest in a project that is least likely to pay off, you might as well _____ it.", "answer": "close your ears to", "translation": "如果有人试图说服你去投资一个最不可能有回报的项目，你大可对其不闻不问。"},
+            {"question": "Every year, 1.25 million people die in traffic accidents around the world, which is _____ to the entire population of China's Lijiang City.", "answer": "equivalent", "translation": "全世界每年有 125 万人死于交通事故，相当于中国丽江市的总人口。"},
+            {"question": "Huawei, a Chinese technology company that provides telecommunication equipment and sells consumer electronics, enjoys high _____ both locally and internationally.", "answer": "prestige", "translation": "华为是一家提供通信设备和销售消费电子产品的中国科技公司，在国内外都享有很高的声望。"},
+            {"question": "His _____ of the theory was not accurate or objective.", "answer": "interpretation", "translation": "他对该理论的诠释既不准确也不客观。"},
+            {"question": "We hope that our research will have an _____ on the environment, especially the air quality in cities.", "answer": "impact", "translation": "我们希望我们的研究能对环境产生影响，尤其是城市的空气质量。"},
+            {"question": "You shouldn't _____ the possibility of losing the match.", "answer": "discount", "translation": "你不应低估输掉比赛的可能性。"},
+            {"question": "It's common _____ in western culture to tip the hairdresser.", "answer": "practice", "translation": "在西方文化中，给理发师小费是常见的惯例。"},
+            {"question": "The lawyer's arguments are well grounded because he has collected enough _____ concerning the case.", "answer": "proof", "translation": "律师的论点很有根据，因为他收集了关于此案的足够证据。"},
+            {"question": "There has been so much media _____ of the facts that nobody knows the truth of the issue.", "answer": "manipulation", "translation": "媒体对事实进行了大量操控，以至于没人知道事情的真相。"},
+            {"question": "These workshops, usually of a couple of days' _____, bring scholars and administrators together to address some problems.", "answer": "duration", "translation": "这些研讨会通常持续数天，汇集学者和管理者共同解决一些问题。"},
+            {"question": "The sales of healthcare products have been increasing drastically, which _____ the public's pursuit of health and longevity.", "answer": "mirrors", "translation": "保健品的销量急剧增长，反映了公众对健康和长寿的追求。"},
+            {"question": "People in rural or underserved urban areas tend to be much _____ when it comes to the latest computing technology.", "answer": "behind the times", "translation": "在农村或城市服务不足地区，人们对最新的计算技术往往非常落伍。"},
+            {"question": "The glaciers on several mountain ranges are decreasing in size _____ reduction in gases that help to maintain temperatures, and changes in the region's climate.", "answer": "due to", "translation": "几条山脉的冰川正在缩小，这是由于有助于维持温度的气体减少以及该地区气候发生变化所致。"},
+            {"question": "Talk to someone or a professional about your problems. Don't let your depression _____.", "answer": "build up", "translation": "向他人或专业人士倾诉你的问题，别让你的抑郁情绪累积。"},
+            {"question": "The increasing number of solitary persons, in a sense, is _____ the lack of communication in the modern world.", "answer": "a metaphor for", "translation": "从某种意义上说，独居者人数的增加是现代世界缺乏沟通的写照。"},
+            {"question": "He is studying like crazy to _____ the lessons he missed during his stay in the hospital.", "answer": "make up", "translation": "他正在疯狂学习，以弥补住院期间落下的课程。"},
+            {"question": "The company's new president will have to _____ some complicated legal problems from his predecessor.", "answer": "inherit", "translation": "公司的新总裁将不得不接手前任留下的一些复杂的法律问题。"},
+            {"question": "The railway company claimed that they would _____ 20 percent of a fare if their train is more than an hour late.", "answer": "refund", "translation": "铁路公司声称，如果列车晚点超过一小时，他们将退还 20% 的车费。"},
+            {"question": "There are rules to prohibit emission of poisonous waste, yet some factories _____ them for the sake of costs.", "answer": "disregard", "translation": "虽然有规定禁止排放有毒废物，但一些工厂为了成本考虑对此置之不理。"},
+            {"question": "The system is so sensitive that it can _____ changes in temperature as small as 0.003 degrees.", "answer": "detect", "translation": "该系统非常灵敏，能够检测到小至 0.003 度的温度变化。"},
+            {"question": "The composer _____ that he copied the tune from an old Beatles song.", "answer": "denies", "translation": "这位作曲家否认他从一首披头士的老歌中抄袭了曲调。"},
+            {"question": "After 30 years' living in Guangzhou, Elizabeth has been _____ into the local culture, and now she speaks fluent Cantonese.", "answer": "assimilated", "translation": "在广州生活了 30 年后，伊丽莎白已融入了当地文化，现在能说一口流利的粤语。"},
+            {"question": "The executives believed that combining the two work teams would _____ their strength by several times.", "answer": "multiply", "translation": "高管们相信，将这两个工作团队合并会使他们的力量成倍增加。"},
+            {"question": "Some manual labor is bound to be _____ by artificial intelligence, so workers need retraining for more technical jobs.", "answer": "displaced", "translation": "一些体力劳动必然会被人工智能取代，因此工人需要接受再培训以从事技术性更强的工作。"},
+            {"question": "The common nutrition advice usually includes the general statement 'eat less _____ food and choose fresh food instead.", "answer": "processed", "translation": "常见的营养建议通常包括这样一句通用的话：“少吃加工食品，选择新鲜食品。”"},
+            {"question": "Some people are anxious to try various health _____, but never stick to any of them.", "answer": "regimes", "translation": "有些人急于尝试各种养生方法，但从未坚持过任何一种。"},
+            {"question": "It will take some time for the applicants to _____ the forms for overseas study programs.", "answer": "fill out", "translation": "申请者需要一些时间来填写海外留学项目的申请表。"},
+            {"question": "The case was handed over to independent investigators so that there could be no inference of bias _____ any party.", "answer": "in favor of", "translation": "该案被移交给独立调查员，以确保不会产生偏袒任何一方的嫌疑。"},
+            {"question": "The government programs are intended to _____ poverty throughout the country within ten years.", "answer": "be rid of", "translation": "这些政府计划旨在十年内在全国范围内消除贫困。"},
+            {"question": "When you have to cope with so many issues at the same time, mistakes _____ happen.", "answer": "are bound to", "translation": "当你不得不同时处理这么多问题时，错误必然会发生。"},
+            {"question": "As a result, the method of _____ means convenience for the policy makers, but not practical to the local governments with their specific needs and situations.", "answer": "one size fits all", "translation": "因此，“一刀切”的方法对政策制定者来说意味着便利，但对于有特定需求和情况的当地政府来说并不切实际。"},
+            {"question": "What is fundamental to a company's survival is to _____ and always go a few steps ahead in the industry.", "answer": "innovate", "translation": "一家公司生存的根本在于创新，并始终保持行业领先几步。"},
+            {"question": "All the member countries at the conference have signed a treaty to _____ their loyalty to the alliance.", "answer": "proclaim", "translation": "与会各国签署了一项条约，以表明他们对联盟的忠诚。"},
+            {"question": "It is well _____ that women generally have a longer life span than men.", "answer": "documented", "translation": "女性通常比男性寿命更长，这一点已有充分记载。"},
+            {"question": "The attorney's arguments are valid since he has collected enough _____ concerning the case.", "answer": "proof", "translation": "律师的论点是有力的，因为他已收集了关于此案的充分证据。"},
+            {"question": "Their _____ views have been opposed by the public.", "answer": "extreme", "translation": "他们的极端观点遭到了公众的反对。"},
+            {"question": "Studies suggest that regular intake of vitamins significantly improves brain _____.", "answer": "function", "translation": "研究表明，定期摄入维生素能显著改善大脑功能。"},
+            {"question": "It is proved that playing sports can _____ the social development of young people, teaching them how to interact with peers outside the classroom.", "answer": "foster", "translation": "事实证明，进行体育运动能促进青少年的社会发展，教会他们如何在课堂外与同龄人互动。"},
+            {"question": "Big-name employers, from central enterprises to tech giants, have a(n) _____ in favor of recruiting graduates from prestigious universities.", "answer": "bias", "translation": "从央企到科技巨头，知名雇主普遍存在一种偏爱招聘名校毕业生的偏见。"},
+            {"question": "His account of the situation was very _____ and you should check facts before making a judgment.", "answer": "biased", "translation": "他对情况的描述带有很大偏见，你在做判断前应该核实事实。"},
+            {"question": "Despite low interest rates, the concept of depositing money in the bank still _____ among the vast majority of people.", "answer": "prevails", "translation": "尽管利率很低，在银行存款的观念仍在绝大多数人中流行。"},
+            {"question": "He couldn't find the application form; probably he had not even been given one _____.", "answer": "in the first place", "translation": "他找不到申请表；可能一开始就没有人给他一份。"},
+            {"question": "They often look towards the same evidence as those _____ proving its existence, but draw different conclusions.", "answer": "in favor of", "translation": "他们常常和那些支持其存在的人看同样的证据，却得出不同的结论。"},
+            {"question": "An alarming number of physicians are unable to _____ the pressure of practicing everyday medicine.", "answer": "cope with", "translation": "数量惊人的医生无法应对日常行医的压力。"},
+            {"question": "In preparation for the spelling competition, students are busy reviewing the words in the dictionary and trying to _____ them to memory.", "answer": "commit", "translation": "为准备拼写比赛，学生们正忙于复习词典里的单词，并努力把它们记下来。"},
+            {"question": "When you are in a leadership position, many people will _____ whether intentionally or not.", "answer": "take a leaf from your book", "translation": "当你身处领导职位时，很多人都会有意识或无意识地效仿你。"}
+        ];
+
+        // --- 全局状态管理 ---
+        const AppState = {
+            status: [], // 0:未做, 1:正确, 2:错误
+            mistakeCount: 0,
+            
+            // 当前会话状态
+            currentMode: 'random', // random, sequential, review
+            practiceQueue: [], // 待刷题目索引数组
+            currentQueueIndex: 0,
+            isAnswered: false,
+            currentOptions: [], // 存储当前题目选项，用于键盘映射
+            autoAdvance: true // 自动切题
+        };
+
+        // --- 初始化与本地存储 ---
+        function initApp() {
+            // 加载主题
+            if(localStorage.getItem('theme') === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+            }
+
+            // 加载进度
+            const savedStatus = localStorage.getItem('eng_quiz_status');
+            if (savedStatus) {
+                AppState.status = JSON.parse(savedStatus);
+                // 校验长度防止题库更新后报错
+                if(AppState.status.length !== rawQuestionBank.length) {
+                    AppState.status = new Array(rawQuestionBank.length).fill(0);
+                }
+            } else {
+                AppState.status = new Array(rawQuestionBank.length).fill(0);
+            }
+
+            // 加载自动切题设置
+            const savedAutoAdvance = localStorage.getItem('eng_auto_advance');
+            if (savedAutoAdvance !== null) {
+                AppState.autoAdvance = (savedAutoAdvance === 'true');
+            }
+            document.getElementById('auto-advance-toggle').checked = AppState.autoAdvance;
+            
+            updateStatsView();
+            setupKeyboardListener();
+        }
+
+        function saveProgress() {
+            localStorage.setItem('eng_quiz_status', JSON.stringify(AppState.status));
+            updateStatsView();
+        }
+
+        function toggleAutoAdvance() {
+            AppState.autoAdvance = document.getElementById('auto-advance-toggle').checked;
+            localStorage.setItem('eng_auto_advance', AppState.autoAdvance);
+        }
+
+        // --- 核心逻辑 ---
+
+        function startPractice(mode) {
+            AppState.currentMode = mode;
+            AppState.practiceQueue = generateQueue(mode);
+            
+            if (AppState.practiceQueue.length === 0) {
+                if(mode === 'review') {
+                    alert("🎉 太棒了！你目前没有错题记录！");
+                } else {
+                    alert("所有题目已完成！建议重置进度或复习错题。");
+                }
+                return;
+            }
+
+            AppState.currentQueueIndex = 0;
+            switchView('quiz');
+            loadQuestion();
+        }
+
+        function generateQueue(mode) {
+            let indices = [];
+            if (mode === 'review') {
+                // 筛选出错题 (status == 2)
+                rawQuestionBank.forEach((_, idx) => {
+                    if (AppState.status[idx] === 2) indices.push(idx);
+                });
+                shuffleArray(indices); // 错题也要乱序
+            } else if (mode === 'sequential') {
+                // 顺序模式：找出所有未做(0) 或 错误(2) 的题目，按顺序
+                rawQuestionBank.forEach((_, idx) => {
+                    if (AppState.status[idx] !== 1) indices.push(idx); // 已掌握的(1)就不推了，除非重置
+                });
+            } else {
+                // 随机模式
+                rawQuestionBank.forEach((_, idx) => indices.push(idx));
+                shuffleArray(indices);
+            }
+            return indices;
+        }
+
+        function loadQuestion() {
+            // 检查是否结束
+            if (AppState.currentQueueIndex >= AppState.practiceQueue.length) {
+                alert("🎉 本轮练习完成！");
+                exitPractice();
+                return;
+            }
+
+            const realIndex = AppState.practiceQueue[AppState.currentQueueIndex];
+            const questionData = rawQuestionBank[realIndex];
+            AppState.isAnswered = false;
+
+            // UI 更新
+            document.getElementById('current-index-display').innerText = realIndex + 1;
+            document.getElementById('remaining-count').innerText = AppState.practiceQueue.length - AppState.currentQueueIndex - 1;
+            document.getElementById('mode-badge').innerText = getModeName(AppState.currentMode);
+            document.getElementById('session-progress').style.width = `${(AppState.currentQueueIndex / AppState.practiceQueue.length) * 100}%`;
+            
+            // 渲染题目文本 (挖空处理)
+            const blankHtml = `<span class="highlight-blank">____</span>`;
+            const displayQ = questionData.question.replace('_____', blankHtml);
+            document.getElementById('question-text').innerHTML = displayQ;
+
+            // 渲染选项
+            const options = generateOptions(questionData.answer);
+            AppState.currentOptions = options; // 存下来用于键盘逻辑
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            options.forEach((opt, idx) => {
+                const btn = document.createElement('div');
+                btn.className = 'option-card';
+                btn.innerHTML = `<span class="option-key">${idx + 1}</span> <span>${opt}</span>`;
+                btn.onclick = () => handleAnswer(opt, idx);
+                btn.dataset.val = opt;
+                btn.id = `opt-${idx}`;
+                optionsContainer.appendChild(btn);
+            });
+
+            // 隐藏解析
+            document.getElementById('analysis-box').style.display = 'none';
+            document.getElementById('next-btn').style.display = 'none'; // 答完才显示
+            document.getElementById('show-answer-btn').disabled = false;
+        }
+
+        function generateOptions(correctAnswer) {
+            // 获取所有错误答案
+            const allAnswers = rawQuestionBank.map(q => q.answer);
+            const wrongPool = allAnswers.filter(a => a !== correctAnswer);
+            
+            // 随机选3个错误答案
+            shuffleArray(wrongPool);
+            const selectedWrong = wrongPool.slice(0, 3);
+            
+            const options = [correctAnswer, ...selectedWrong];
+            shuffleArray(options);
+            return options;
+        }
+
+        function handleAnswer(selectedVal, domIndex) {
+            if (AppState.isAnswered) return;
+            AppState.isAnswered = true;
+
+            const realIndex = AppState.practiceQueue[AppState.currentQueueIndex];
+            const correctVal = rawQuestionBank[realIndex].answer;
+            const isCorrect = selectedVal === correctVal;
+
+            // 更新数据
+            AppState.status[realIndex] = isCorrect ? 1 : 2;
+            saveProgress();
+
+            // UI 反馈
+            const options = document.querySelectorAll('.option-card');
+            options.forEach(opt => {
+                if(opt.dataset.val === correctVal) opt.classList.add('correct');
+                else if(opt.dataset.val === selectedVal && !isCorrect) opt.classList.add('incorrect');
+            });
+
+            // 显示解析
+            const analysisBox = document.getElementById('analysis-box');
+            document.getElementById('feedback-title').innerHTML = isCorrect ? 
+                '<span style="color:var(--success-color)">✓ 回答正确</span>' : 
+                '<span style="color:var(--error-color)">✗ 回答错误</span>';
+            document.getElementById('translation-text').innerText = rawQuestionBank[realIndex].translation;
+            analysisBox.style.display = 'block';
+            document.getElementById('next-btn').style.display = 'inline-block';
+            document.getElementById('show-answer-btn').disabled = true;
+
+            // 自动切题逻辑
+            if(isCorrect && AppState.autoAdvance) {
+                // 延时 0.7秒 跳转，让用户看清“绿色”正确反馈
+                setTimeout(() => {
+                    // 确保用户没有在等待期间手动点了退出
+                    if (document.getElementById('quiz-view').style.display !== 'none') {
+                        nextQuestion();
+                    }
+                }, 700); 
+            }
+        }
+
+        function nextQuestion() {
+            if (!AppState.isAnswered) return;
+            AppState.currentQueueIndex++;
+            loadQuestion();
+        }
+
+        function showAnswer() {
+            if (AppState.isAnswered) return;
+            // 视为答错
+            const realIndex = AppState.practiceQueue[AppState.currentQueueIndex];
+            AppState.status[realIndex] = 2; // 标记为错题
+            saveProgress();
+            
+            // 触发UI显示
+            handleAnswer("SHOW_ANSWER_TRIGGER", -1);
+        }
+
+        // --- 辅助功能 ---
+
+        function updateStatsView() {
+            const total = rawQuestionBank.length;
+            const done = AppState.status.filter(s => s !== 0).length;
+            const correct = AppState.status.filter(s => s === 1).length;
+            const wrong = AppState.status.filter(s => s === 2).length;
+
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('stat-done').innerText = done;
+            document.getElementById('stat-wrong').innerText = wrong;
+            document.getElementById('stat-accuracy').innerText = done > 0 ? Math.round((correct / done) * 100) + '%' : '0%';
+
+            // 控制错题按钮状态
+            document.getElementById('btn-review-mistakes').disabled = (wrong === 0);
+        }
+
+        function switchView(viewName) {
+            document.getElementById('stats-view').style.display = viewName === 'stats' ? 'block' : 'none';
+            document.getElementById('quiz-view').style.display = viewName === 'quiz' ? 'block' : 'none';
+            if(viewName === 'stats') updateStatsView();
+        }
+
+        function exitPractice() {
+            switchView('stats');
+        }
+
+        function resetAllProgress() {
+            if(confirm('确定要清空所有刷题记录吗？此操作不可恢复。')) {
+                AppState.status = new Array(rawQuestionBank.length).fill(0);
+                saveProgress();
+            }
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        function getModeName(mode) {
+            const map = { 'random': '随机', 'sequential': '顺序', 'review': '错题' };
+            return map[mode] || '练习';
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // --- 键盘支持 ---
+        function setupKeyboardListener() {
+            document.addEventListener('keydown', (e) => {
+                if (document.getElementById('quiz-view').style.display === 'none') return;
+
+                const key = e.key;
+                // 选项 1-4
+                if (['1', '2', '3', '4'].includes(key)) {
+                    const idx = parseInt(key) - 1;
+                    const optBtn = document.getElementById(`opt-${idx}`);
+                    if (optBtn && !AppState.isAnswered) {
+                        optBtn.click();
+                    }
+                }
+                // Enter 下一题
+                if (key === 'Enter') {
+                    if (AppState.isAnswered) {
+                        nextQuestion();
+                    }
+                }
+            });
+        }
+
+        // --- 数据导入导出 ---
+        function openDataModal() {
+            document.getElementById('data-modal').style.display = 'flex';
+            // 导出当前数据
+            const data = {
+                status: AppState.status,
+                timestamp: new Date().toISOString()
+            };
+            document.getElementById('data-area').value = JSON.stringify(data);
+        }
+
+        function closeDataModal() {
+            document.getElementById('data-modal').style.display = 'none';
+        }
+
+        function importData() {
+            try {
+                const jsonStr = document.getElementById('data-area').value;
+                const data = JSON.parse(jsonStr);
+                if (Array.isArray(data.status) && data.status.length === rawQuestionBank.length) {
+                    AppState.status = data.status;
+                    saveProgress();
+                    alert("数据恢复成功！");
+                    closeDataModal();
+                    updateStatsView();
+                } else {
+                    alert("数据格式不正确，无法恢复。");
+                }
+            } catch (e) {
+                alert("JSON 解析失败，请检查数据格式。");
+            }
+        }
+
+        // 启动
+        initApp();
+    </script>
+</body>
+</html>

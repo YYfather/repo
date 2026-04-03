@@ -65,7 +65,7 @@ plt.rcParams['axes.unicode_minus'] = False
 
 # 设置页面配置
 st.set_page_config(
-    page_title="机器学习教学工具（增强版）",
+    page_title="机器学习教学工具",
     page_icon="🤖",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -128,7 +128,7 @@ if 'training_history' not in st.session_state:
     st.session_state['training_history'] = []
 
 # 主标题
-st.markdown('<h1 class="main-header">🎓 机器学习教学工具（增强版）</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">🎓 机器学习教学工具</h1>', unsafe_allow_html=True)
 st.markdown("### 交互式机器学习算法演示与学习平台 | 支持算法比较、交叉验证、模型解释")
 
 # 侧边栏配置
@@ -1640,7 +1640,7 @@ with col2:
 st.divider()
 st.markdown("""
 <div style="text-align: center; color: #666; padding: 1rem;">
-    <p>🎓 机器学习教学工具（增强版） | 基于Streamlit构建</p>
+    <p>🎓 机器学习教学工具 | 基于Streamlit构建</p>
     <p>适用于课堂教学、自学和实验演示 | 支持算法比较、交叉验证、模型解释</p>
 </div>
 """, unsafe_allow_html=True)

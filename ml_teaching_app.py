@@ -13,6 +13,8 @@ import pickle
 import json
 from datetime import datetime
 from io import BytesIO
+import os
+import matplotlib.font_manager as fm
 
 # 机器学习相关
 from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV, learning_curve, validation_curve
@@ -59,8 +61,25 @@ except ImportError:
 import warnings
 warnings.filterwarnings('ignore')
 
-# 全局配置中文字体
-plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'PingFang SC', 'Heiti TC', 'sans-serif']
+# # 全局配置中文字体
+# plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'PingFang SC', 'Heiti TC', 'sans-serif']
+# plt.rcParams['axes.unicode_minus'] = False
+
+# 全局配置中文字体（适配云端部署）
+# 假设你的字体文件名为 SimHei.ttf，并且放在了与此脚本同级的目录下
+font_path = "SimHei.ttf" 
+
+if os.path.exists(font_path):
+    # 如果找到了本地/云端的字体文件，就动态加载它
+    fm.fontManager.addfont(font_path)
+    font_prop = fm.FontProperties(fname=font_path)
+    # 将 matplotlib 的全局字体设置为我们刚刚加载的字体
+    plt.rcParams['font.sans-serif'] = [font_prop.get_name()]
+else:
+    # 如果找不到文件（作为备用方案），再尝试使用系统默认可能存在的中文字体
+    plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'PingFang SC', 'sans-serif']
+
+# 解决坐标轴负号'-'显示为方块的问题
 plt.rcParams['axes.unicode_minus'] = False
 
 # 设置页面配置

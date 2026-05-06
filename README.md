@@ -6,6 +6,11 @@
 
 3、选词填空.html 研究生英语选词填空练习html格式。
 
-4、ml_reaching_app.py 机器学习教学代码
+4、ml_reaching_app.py 机器学习教学代码。
 
-5、Crop_recommendation.csv 配合4使用的示例数据集
+5、Crop_recommendation.csv 配合4使用的示例数据集。
+
+6、枝条类姿态检测辅助标注。链接：https://pan.xunlei.com/s/VOrwS6omYpsH2MoJT16Y4TABA1?pwd=s4rx#
+
+
+7、图像分类辅助迭代器。链接：https://pan.xunlei.com/s/VOrwS6omYpsH2MoJT16Y4TABA1?pwd=s4rx#
